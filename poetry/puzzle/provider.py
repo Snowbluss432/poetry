@@ -5,8 +5,11 @@ import re
 from contextlib import contextmanager
 from tempfile import mkdtemp
 from typing import Any
+from typing import Dict
+from typing import Iterator
 from typing import List
 from typing import Optional
+from typing import Union
 
 from clikit.ui.components import ProgressIndicator
 
@@ -69,10 +72,10 @@ class Provider:
     def pool(self):  # type: () -> Pool
         return self._pool
 
-    def is_debugging(self):
+    def is_debugging(self):  # type: () -> bool
         return self._is_debugging
 
-    def set_overrides(self, overrides):
+    def set_overrides(self, overrides):  # type: (Dict) -> None
         self._overrides = overrides
 
     def load_deferred(self, load_deferred):  # type: (bool) -> None
@@ -91,7 +94,9 @@ class Provider:
         self._env = original_env
         self._python_constraint = original_python_constraint
 
-    def search_for(self, dependency):  # type: (Dependency) -> List[Package]
+    def search_for(
+        self, dependency
+    ):  # type: (Union[Dependency, VCSDependency, FileDependency, DirectoryDependency, URLDependency]) -> List[DependencyPackage]
         """
         Search for the specifications that match the given dependency.
 
@@ -176,7 +181,7 @@ class Provider:
     @classmethod
     def get_package_from_vcs(
         cls, vcs, url, branch=None, tag=None, rev=None, name=None
-    ):  # type: (str, str, Optional[str], Optional[str]) -> Package
+    ):  # type: (str, str, Optional[str], Optional[str], Optional[str], Optional[str]) -> Package
         if vcs != "git":
             raise ValueError("Unsupported VCS dependency {}".format(vcs))
 
@@ -685,7 +690,7 @@ class Provider:
 
         return package
 
-    def debug(self, message, depth=0):
+    def debug(self, message, depth=0):  # type: (str, int) -> None
         if not (self._io.is_very_verbose() or self._io.is_debug()):
             return
 
@@ -772,7 +777,7 @@ class Provider:
             self._io.write(debug_info)
 
     @contextmanager
-    def progress(self):
+    def progress(self):  # type: () -> Iterator[None]
         if not self._io.output.supports_ansi() or self.is_debugging():
             self._io.write_line("Resolving dependencies...")
             yield

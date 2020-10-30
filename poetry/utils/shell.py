@@ -2,6 +2,8 @@ import os
 import signal
 import sys
 
+from typing import Any
+
 import pexpect
 
 from clikit.utils.terminal import Terminal
@@ -77,7 +79,7 @@ class Shell:
         activate_path = env.path / bin_dir / activate_script
         c.sendline("{} {}".format(self._get_source_command(), activate_path))
 
-        def resize(sig, data):
+        def resize(sig, data):  # type: (Any, Any) -> None
             terminal = Terminal()
             c.setwinsize(terminal.height, terminal.width)
 
@@ -89,7 +91,7 @@ class Shell:
 
         sys.exit(c.exitstatus)
 
-    def _get_activate_script(self):
+    def _get_activate_script(self):  # type: () -> str
         if "fish" == self._name:
             suffix = ".fish"
         elif "csh" == self._name:
@@ -101,7 +103,7 @@ class Shell:
 
         return "activate" + suffix
 
-    def _get_source_command(self):
+    def _get_source_command(self):  # type: () -> str
         if "fish" == self._name:
             return "source"
         elif "csh" == self._name:

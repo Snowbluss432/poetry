@@ -1,6 +1,13 @@
 import json
 import re
 
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+
 from cleo import argument
 from cleo import option
 
@@ -9,6 +16,10 @@ from poetry.core.toml.file import TOMLFile
 from poetry.factory import Factory
 
 from .command import Command
+
+
+if TYPE_CHECKING:
+    from poetry.config.config_source import ConfigSource  # noqa
 
 
 class ConfigCommand(Command):
@@ -40,7 +51,7 @@ To remove a repository (repo is a short alias for repositories):
     LIST_PROHIBITED_SETTINGS = {"http-basic", "pypi-token"}
 
     @property
-    def unique_config_values(self):
+    def unique_config_values(self):  # type: () -> Dict[str, Tuple[Any, Any, Any]]
         from poetry.config.config import boolean_normalizer
         from poetry.config.config import boolean_validator
         from poetry.locations import CACHE_DIR
@@ -74,7 +85,7 @@ To remove a repository (repo is a short alias for repositories):
 
         return unique_config_values
 
-    def handle(self):
+    def handle(self):  # type: () -> Optional[int]
         from poetry.config.file_config_source import FileConfigSource
         from poetry.locations import CONFIG_DIR
         from poetry.utils._compat import Path
@@ -252,7 +263,9 @@ To remove a repository (repo is a short alias for repositories):
 
         raise ValueError("Setting {} does not exist".format(self.argument("key")))
 
-    def _handle_single_value(self, source, key, callbacks, values):
+    def _handle_single_value(
+        self, source, key, callbacks, values
+    ):  # type: ("ConfigSource", str, Tuple[Any, Any, Any], List[Any]) -> int
         validator, normalizer, _ = callbacks
 
         if len(values) > 1:
@@ -266,7 +279,7 @@ To remove a repository (repo is a short alias for repositories):
 
         return 0
 
-    def _list_configuration(self, config, raw, k=""):
+    def _list_configuration(self, config, raw, k=""):  # type: (Dict, Dict, str) -> None
         from poetry.utils._compat import basestring
 
         orig_k = k
@@ -302,7 +315,9 @@ To remove a repository (repo is a short alias for repositories):
 
             self.line(message)
 
-    def _get_setting(self, contents, setting=None, k=None, default=None):
+    def _get_setting(
+        self, contents, setting=None, k=None, default=None
+    ):  # type: (Dict, Optional[str], Optional[str], Optional[Any]) -> List[Tuple[str, str]]
         orig_k = k
 
         if setting and setting.split(".")[0] not in contents:

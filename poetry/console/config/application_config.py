@@ -34,7 +34,7 @@ from poetry.utils._compat import PY36
 
 
 class ApplicationConfig(BaseApplicationConfig):
-    def configure(self):
+    def configure(self):  # type: () -> None
         super(ApplicationConfig, self).configure()
 
         self.add_style(Style("c1").fg("cyan"))

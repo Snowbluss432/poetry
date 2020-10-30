@@ -3,9 +3,12 @@ import re
 import warnings
 
 from collections import defaultdict
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Dict
 from typing import Generator
+from typing import List
 from typing import Optional
-from typing import Union
 
 import requests
 import requests.auth
@@ -32,6 +35,9 @@ from .exceptions import PackageNotFound
 from .exceptions import RepositoryError
 from .pypi_repository import PyPiRepository
 
+
+if TYPE_CHECKING:
+    from poetry.core.packages import Dependency  # noqa
 
 try:
     import urllib.parse as urlparse
@@ -73,7 +79,9 @@ class Page:
         ".tar",
     ]
 
-    def __init__(self, url, content, headers):
+    def __init__(
+        self, url, content, headers
+    ):  # type: (str, str, Dict[str, Any]) -> None
         if not url.endswith("/"):
             url += "/"
 
@@ -131,7 +139,7 @@ class Page:
             if self.link_version(link) == version:
                 yield link
 
-    def link_version(self, link):  # type: (Link) -> Union[Version, None]
+    def link_version(self, link):  # type: (Link) -> Optional[Version]
         m = wheel_file_re.match(link.filename)
         if m:
             version = m.group("ver")
@@ -152,7 +160,7 @@ class Page:
 
     _clean_re = re.compile(r"[^a-z0-9$&+,/:;=?@.#%_\\|-]", re.I)
 
-    def clean_link(self, url):
+    def clean_link(self, url):  # type: (str) -> str
         """Makes sure a link is fully encoded.  That is, if a ' ' shows up in
         the link, it will be rewritten to %20 (while not over-quoting
         % or other characters)."""
@@ -229,7 +237,7 @@ class LegacyRepository(PyPiRepository):
             path=parsed.path,
         )
 
-    def find_packages(self, dependency):
+    def find_packages(self, dependency):  # type: ("Dependency") -> List[Package]
         packages = []
 
         constraint = dependency.constraint
@@ -300,7 +308,9 @@ class LegacyRepository(PyPiRepository):
 
         return packages
 
-    def package(self, name, version, extras=None):  # type: (...) -> Package
+    def package(
+        self, name, version, extras=None
+    ):  # type: (str, str, Optional[List[str]]) -> Package
         """
         Retrieve the release information.
 
@@ -324,7 +334,7 @@ class LegacyRepository(PyPiRepository):
 
             return package
 
-    def find_links_for_package(self, package):
+    def find_links_for_package(self, package):  # type: (Package) -> List[Link]
         page = self._get("/{}/".format(package.name.replace(".", "-")))
         if page is None:
             return []
@@ -379,7 +389,7 @@ class LegacyRepository(PyPiRepository):
 
         return data.asdict()
 
-    def _get(self, endpoint):  # type: (str) -> Union[Page, None]
+    def _get(self, endpoint):  # type: (str) -> Optional[Page]
         url = self._url + endpoint
         try:
             response = self.session.get(url)
