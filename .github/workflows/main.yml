@@ -1,6 +1,7 @@
 name: Tests
 
-on:
+on:CHANGELOG.md#2971
+
   push:
     paths-ignore:
       - 'docs/**'
